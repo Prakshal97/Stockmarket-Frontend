@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api',
+  // Default to production Render URL. Use .env.local to override for local development
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://stockmarket-backend-1-kk4j.onrender.com/api',
 });
 
 export const getAnnouncements = async (params = {}) => {
@@ -16,7 +17,7 @@ export const getStats = async () => {
 
 export const downloadExcel = (type: 'authorized-capital' | 'full-report', params = {}) => {
   const urlParams = new URLSearchParams(params as any).toString();
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://stockmarket-backend-1-kk4j.onrender.com/api';
   window.location.href = `${baseUrl}/excel/${type}?${urlParams}`;
 };
 
