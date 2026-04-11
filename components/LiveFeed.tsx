@@ -23,7 +23,8 @@ export default function LiveFeed({ onStatsUpdate }: LiveFeedProps) {
     setLoading(true);
     try {
       const data = await getAnnouncements(filters);
-      setAnnouncements(data.data || []);
+      // Backend now returns { announcements: [...] }
+      setAnnouncements(data.announcements || data.data || []);
       onStatsUpdate();
     } catch (error) {
       console.error('Error fetching announcements:', error);

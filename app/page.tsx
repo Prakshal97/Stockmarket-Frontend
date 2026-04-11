@@ -38,7 +38,7 @@ export default function Home() {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '1rem' }}>
           <ExcelDownload />
           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-            Data sourced from NSE & BSE | Powered by Gemini AI
+            Data sourced from NSE & BSE | Powered by Groq AI
           </div>
         </div>
       </header>

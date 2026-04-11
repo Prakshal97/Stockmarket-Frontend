@@ -1,6 +1,6 @@
 import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { TrendingUp, TrendingDown, ArrowRight, ExternalLink, FileText, AlertCircle, Zap, ShieldAlert } from 'lucide-react';
+import { ExternalLink, FileText, ArrowRight, AlertCircle, Zap, Shield, Brain, Calendar, CheckCircle, Clock } from 'lucide-react';
 import styles from './AnnouncementCard.module.css';
 
 interface AnnouncementProps {
@@ -10,112 +10,153 @@ interface AnnouncementProps {
     company_name: string;
     ticker: string;
     announcement_type: string;
+    title: string;
+    description: string;
     announcement_date: string;
     key_details: string;
     revenue_profit_impact?: string;
-    sentiment: 'Positive' | 'Neutral' | 'Negative';
-    impact_level: 'High' | 'Medium' | 'Low';
+    sentiment: string;
+    impact_level: string;
+    impact: string;
+    board_approval: string;
+    meeting_date: string;
     ai_insight: string;
     trading_signal: string;
     source_url: string;
     pdf_url?: string;
+    created_at?: string;
     authorized_capital?: any;
   };
 }
 
+const safe = (val: any, fallback = 'Not Available'): string => {
+  if (val === null || val === undefined) return fallback;
+  const str = String(val).trim();
+  if (!str || str.toLowerCase() === 'null' || str.toLowerCase() === 'none' || str.toLowerCase() === 'n/a') return fallback;
+  return str;
+};
+
 export default function AnnouncementCard({ data }: AnnouncementProps) {
   const date = data.announcement_date ? new Date(data.announcement_date) : new Date();
   
+  const impactLevel = safe(data.impact_level || data.impact, 'Low');
+  const sentiment = safe(data.sentiment, 'Neutral');
+  const title = safe(data.title, 'ANNOUNCEMENT');
+  const description = safe(data.description || data.key_details, 'No description available');
+  const boardApproval = safe(data.board_approval);
+  const meetingDate = safe(data.meeting_date);
+  const aiInsight = safe(data.ai_insight);
+  const companyName = safe(data.company_name, 'Unknown Company');
+  const ticker = safe(data.ticker, '');
+  const exchange = safe(data.exchange, 'NSE');
+  const tradingSignal = safe(data.trading_signal, '');
+  const sourceUrl = safe(data.source_url, '#');
+
   const getImpactIcon = () => {
-    switch(data.impact_level) {
-      case 'High': return <AlertCircle size={14} />;
-      case 'Medium': return <Zap size={14} />;
-      case 'Low': return <ShieldAlert size={14} />;
-      default: return null;
+    switch(impactLevel) {
+      case 'High': return <AlertCircle size={13} />;
+      case 'Medium': return <Zap size={13} />;
+      case 'Low': return <Shield size={13} />;
+      default: return <Shield size={13} />;
     }
   };
 
-  const getImpactClass = () => {
-    switch(data.impact_level) {
-      case 'High': return styles.high;
-      case 'Medium': return styles.medium;
-      case 'Low': return styles.low;
-      default: return '';
+  const getSentimentLabel = () => {
+    switch(sentiment) {
+      case 'Positive': return '● Bullish';
+      case 'Negative': return '● Bearish';
+      case 'Neutral': return '● Neutral';
+      default: return '● Neutral';
     }
   };
 
   return (
-    <div className={`glass-panel ${styles.card}`}>
-      {/* Header */}
+    <div className={`glass-panel ${styles.card} ${styles[`border${impactLevel}`]}`} id={`announcement-${data.id}`}>
+      {/* ─── Header: Company + Tags ─── */}
       <div className={styles.header}>
-        <div className={styles.companyInfo}>
-          <div className={`${styles.sentiment} ${styles[data.sentiment]}`} title={`Sentiment: ${data.sentiment}`}>
-            <div className={styles.sentimentIndicator}></div>
+        <div className={styles.headerLeft}>
+          <div className={styles.companyRow}>
+            <h3 className={styles.companyName}>{companyName}</h3>
+            <div className={styles.tags}>
+              {ticker && ticker !== 'Not Available' && (
+                <span className={styles.tickerTag}>{ticker}</span>
+              )}
+              <span className={`${styles.exchangeTag} ${styles[exchange.toLowerCase()]}`}>
+                {exchange}
+              </span>
+            </div>
           </div>
-          <div className={styles.companyName}>
-            {data.company_name}
-            {data.ticker && <span className={styles.ticker}>{data.ticker}</span>}
-            <span className={`${styles.exchange} ${data.exchange === 'NSE' ? styles.nse : styles.bse}`}>
-              {data.exchange}
-            </span>
+          <div className={`${styles.sentimentLabel} ${styles[`sentiment${sentiment}`]}`}>
+            {getSentimentLabel()}
           </div>
         </div>
-        
-        <div className={styles.badges}>
-          <div className={`${styles.badge} ${getImpactClass()}`}>
+        <div className={styles.headerRight}>
+          <div className={`${styles.impactBadge} ${styles[`impact${impactLevel}`]}`}>
             {getImpactIcon()}
-            {data.impact_level} Impact
+            <span>{impactLevel} Impact</span>
           </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div>
-        <div className={styles.type}>{data.announcement_type}</div>
-        <div className={styles.content}>
-          {data.key_details}
-        </div>
-        
-        {data.revenue_profit_impact && (
-          <div className={styles.financials}>
-            <strong>Financial Impact:</strong> {data.revenue_profit_impact}
-          </div>
-        )}
-
-        {data.announcement_type === 'Increase in Authorized Capital' && data.authorized_capital && (
-          <div className={styles.financials}>
-            <div><strong>Board Approval:</strong> {data.authorized_capital.board_approval} | <strong>Meeting Date:</strong> {data.authorized_capital.date_of_board_meeting}</div>
-            {data.authorized_capital.proposed_increase_inr && (
-              <div><strong>Proposed Increase:</strong> ₹{(data.authorized_capital.proposed_increase_inr / 10000000).toFixed(2)} Crore</div>
-            )}
-          </div>
-        )}
+      {/* ─── Title ─── */}
+      <div className={styles.titleSection}>
+        <div className={styles.titleLabel}>{title}</div>
+        <div className={styles.typeLabel}>{safe(data.announcement_type, 'Other')}</div>
       </div>
 
-      {/* AI Insight */}
-      {data.ai_insight && (
-        <div className={styles.insight}>
+      {/* ─── Description ─── */}
+      <p className={styles.description}>{description}</p>
+
+      {/* ─── Details Grid: Board Approval + Meeting Date ─── */}
+      <div className={styles.detailsGrid}>
+        <div className={styles.detailItem}>
+          <div className={styles.detailIcon}>
+            <CheckCircle size={14} />
+          </div>
+          <div>
+            <div className={styles.detailLabel}>Board Approval</div>
+            <div className={styles.detailValue}>{boardApproval}</div>
+          </div>
+        </div>
+        <div className={styles.detailItem}>
+          <div className={styles.detailIcon}>
+            <Calendar size={14} />
+          </div>
+          <div>
+            <div className={styles.detailLabel}>Meeting Date</div>
+            <div className={styles.detailValue}>{meetingDate}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── AI Insight ─── */}
+      <div className={styles.insightBox}>
+        <div className={styles.insightHeader}>
           <div className={styles.insightTitle}>
-            <span>🤖 AI Insight</span>
-            {data.trading_signal && (
-              <span className={styles.tradingSignal}>{data.trading_signal}</span>
-            )}
+            <Brain size={15} />
+            <span>AI Insight</span>
           </div>
-          <div className={styles.content}>{data.ai_insight}</div>
+          {tradingSignal && tradingSignal !== 'Not Available' && (
+            <span className={styles.tradingSignal}>{tradingSignal}</span>
+          )}
         </div>
-      )}
+        <p className={styles.insightText}>{aiInsight}</p>
+      </div>
 
-      {/* Footer */}
+      {/* ─── Footer: Timestamp + Links ─── */}
       <div className={styles.footer}>
-        <div>{formatDistanceToNow(date, { addSuffix: true })}</div>
+        <div className={styles.timestamp}>
+          <Clock size={13} />
+          <span>{formatDistanceToNow(date, { addSuffix: true })}</span>
+        </div>
         <div className={styles.actions}>
           {data.pdf_url && (
-            <a href={data.pdf_url} target="_blank" rel="noreferrer" className={styles.link}>
-              <FileText size={14} /> PDF
+            <a href={data.pdf_url} target="_blank" rel="noreferrer" className={styles.actionLink}>
+              <FileText size={13} /> PDF
             </a>
           )}
-          <a href={data.source_url} target="_blank" rel="noreferrer" className={styles.link}>
-            <ExternalLink size={14} /> Source <ArrowRight size={14} />
+          <a href={sourceUrl} target="_blank" rel="noreferrer" className={styles.actionLink}>
+            <ExternalLink size={13} /> Source <ArrowRight size={12} />
           </a>
         </div>
       </div>

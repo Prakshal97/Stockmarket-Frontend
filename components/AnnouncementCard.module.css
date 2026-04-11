@@ -1,146 +1,303 @@
+/* ═══════════════════════════════════════════════════════════════
+   AnnouncementCard — Premium Financial Intelligence Card
+   ═══════════════════════════════════════════════════════════════ */
+
 .card {
-  padding: 1.5rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  margin-bottom: 1rem;
+  padding: 1.5rem 1.75rem;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.25s ease;
+  margin-bottom: 0.75rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  border-left: 3px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
 }
 
 .card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
   border-color: rgba(255, 255, 255, 0.15);
 }
 
+/* Border accent by impact level */
+.borderHigh { border-left-color: #f43f5e; }
+.borderMedium { border-left-color: #f59e0b; }
+.borderLow { border-left-color: #10b981; }
+
+/* ─── Header ─── */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 1rem;
 }
 
-.companyInfo {
+.headerLeft {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.35rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.headerRight {
+  flex-shrink: 0;
+}
+
+.companyRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
 }
 
 .companyName {
   font-size: 1.15rem;
-  font-weight: 600;
-  color: #fff;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.tags {
   display: flex;
+  gap: 0.35rem;
   align-items: center;
-  gap: 0.5rem;
 }
 
-.ticker {
-  font-size: 0.8rem;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 0.15rem 0.4rem;
+.tickerTag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0.15rem 0.45rem;
   border-radius: 4px;
-  color: var(--text-secondary);
-  font-family: monospace;
+  color: #94a3b8;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  letter-spacing: 0.5px;
 }
 
-.exchange {
-  font-size: 0.75rem;
+.exchangeTag {
+  font-size: 0.68rem;
   font-weight: 700;
   padding: 0.15rem 0.4rem;
   border-radius: 4px;
+  letter-spacing: 0.3px;
 }
 
-.exchange.nse { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
-.exchange.bse { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+.exchangeTag.nse { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+.exchangeTag.bse { background: rgba(16, 185, 129, 0.15); color: #34d399; }
 
-.badges {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
+/* ─── Sentiment Label ─── */
+.sentimentLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
 }
 
-.badge {
+.sentimentPositive { color: #10b981; }
+.sentimentNegative { color: #ef4444; }
+.sentimentNeutral { color: #eab308; }
+
+/* ─── Impact Badge ─── */
+.impactBadge {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.3rem 0.6rem;
+  font-size: 0.73rem;
+  font-weight: 700;
+  padding: 0.35rem 0.7rem;
   border-radius: 20px;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
 }
 
-/* Impact Badges */
-.badge.high { background: rgba(244, 63, 94, 0.15); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3); }
-.badge.medium { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
-.badge.low { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+.impactHigh {
+  background: rgba(244, 63, 94, 0.12);
+  color: #fb7185;
+  border: 1px solid rgba(244, 63, 94, 0.25);
+  box-shadow: 0 0 12px rgba(244, 63, 94, 0.08);
+}
 
-/* Sentiment Indicators */
-.sentimentIndicator {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+.impactMedium {
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.08);
+}
+
+.impactLow {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.08);
+}
+
+/* ─── Title Section ─── */
+.titleSection {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.titleLabel {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #e2e8f0;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15));
+  padding: 0.3rem 0.8rem;
+  border-radius: 6px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.typeLabel {
+  font-size: 0.78rem;
+  color: #64748b;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+/* ─── Description ─── */
+.description {
+  color: #94a3b8;
+  font-size: 0.92rem;
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ─── Details Grid (Board Approval + Meeting Date) ─── */
+.detailsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.detailItem {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.85rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.detailIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(139, 92, 246, 0.15);
+  color: #a78bfa;
   flex-shrink: 0;
 }
-.sentiment.Positive .sentimentIndicator { background: var(--color-positive); box-shadow: 0 0 8px var(--color-positive); }
-.sentiment.Negative .sentimentIndicator { background: var(--color-negative); box-shadow: 0 0 8px var(--color-negative); }
-.sentiment.Neutral .sentimentIndicator { background: var(--color-neutral); box-shadow: 0 0 8px var(--color-neutral); }
 
-.content {
-  color: var(--text-secondary);
-  font-size: 0.95rem;
-  line-height: 1.6;
-}
-
-.type {
-  font-size: 0.85rem;
+.detailLabel {
+  font-size: 0.7rem;
+  color: #64748b;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--accent-blue);
+  letter-spacing: 0.4px;
   font-weight: 600;
+  margin-bottom: 0.1rem;
+}
+
+.detailValue {
+  font-size: 0.88rem;
+  color: #e2e8f0;
+  font-weight: 600;
+}
+
+/* ─── AI Insight Box ─── */
+.insightBox {
+  padding: 1rem 1.1rem;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.06), rgba(139, 92, 246, 0.06));
+  border-radius: 12px;
+  border: 1px solid rgba(99, 102, 241, 0.12);
+  position: relative;
+  overflow: hidden;
+}
+
+.insightBox::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #3b82f6);
+  opacity: 0.6;
+}
+
+.insightHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 0.5rem;
-}
-
-.financials {
-  margin-top: 0.5rem;
-  padding: 0.75rem;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-  border-left: 2px solid var(--accent-purple);
-  font-size: 0.9rem;
-}
-
-.insight {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border-color);
-  font-size: 0.9rem;
 }
 
 .insightTitle {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  color: #fff;
-  font-weight: 600;
-  margin-bottom: 0.4rem;
+  color: #c4b5fd;
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .tradingSignal {
-  float: right;
   font-weight: 700;
-  font-size: 0.85rem;
-  background: rgba(255,255,255,0.05);
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
+  font-size: 0.78rem;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0.22rem 0.55rem;
+  border-radius: 6px;
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+.insightText {
+  color: #94a3b8;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ─── Footer ─── */
 .footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 0.5rem;
-  font-size: 0.8rem;
-  color: var(--text-muted);
+  margin-top: 0.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.timestamp {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: #475569;
+  font-weight: 500;
 }
 
 .actions {
@@ -148,15 +305,44 @@
   gap: 0.75rem;
 }
 
-.link {
-  color: var(--accent-blue);
+.actionLink {
+  color: #60a5fa;
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  transition: color 0.2s;
+  font-size: 0.78rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
 }
 
-.link:hover {
-  color: #60a5fa;
-  text-decoration: underline;
+.actionLink:hover {
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.1);
+  text-decoration: none;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 600px) {
+  .card {
+    padding: 1.2rem;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .detailsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .companyName {
+    font-size: 1rem;
+  }
+
+  .titleLabel {
+    font-size: 0.9rem;
+  }
 }
