@@ -24,7 +24,14 @@ export default function LiveFeed({ onStatsUpdate }: LiveFeedProps) {
     try {
       const data = await getAnnouncements(filters);
       // Backend now returns { announcements: [...] }
-      setAnnouncements(data.announcements || data.data || []);
+      const raw = data.announcements || data.data || [];
+      // Sort newest first by announcement_date
+      const sorted = [...raw].sort((a, b) => {
+        const dateA = new Date(a.announcement_date || a.created_at || 0).getTime();
+        const dateB = new Date(b.announcement_date || b.created_at || 0).getTime();
+        return dateB - dateA;
+      });
+      setAnnouncements(sorted);
       onStatsUpdate();
     } catch (error) {
       console.error('Error fetching announcements:', error);

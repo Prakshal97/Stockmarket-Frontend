@@ -29,7 +29,7 @@ export default function Home() {
         <div className="title-group">
           <h1>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', color: 'var(--accent-blue)' }}>
-              <BrainCircuit size={40} />
+              <img src="/alphaintel.png" alt="AlphaIntel Logo" width="48" height="48" style={{ borderRadius: '8px', objectFit: 'contain' }} />
               AlphaIntel Agent
             </span>
           </h1>
