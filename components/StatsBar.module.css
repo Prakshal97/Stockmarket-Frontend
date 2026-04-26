@@ -36,3 +36,8 @@
 
 .positive { color: var(--color-positive); font-weight: 600; }
 .negative { color: var(--color-negative); font-weight: 600; }
+
+.authCard {
+  border-left: 3px solid #10b981;
+  background: rgba(16, 185, 129, 0.05);
+}

@@ -4,6 +4,8 @@ import styles from './StatsBar.module.css';
 interface StatsProps {
   stats: {
     total_announcements: number;
+    auth_capital_count?: number;
+    general_count?: number;
     by_exchange?: Record<string, number>;
     by_sentiment?: Record<string, number>;
     by_impact?: Record<string, number>;
@@ -21,6 +23,7 @@ export default function StatsBar({ stats }: StatsProps) {
   const negativeCnt = stats.by_sentiment?.Negative || 0;
 
   const highImpact = stats.by_impact?.High || 0;
+  const authCapCount = stats.auth_capital_count || 0;
 
   return (
     <div className={styles.statsContainer}>
@@ -30,6 +33,14 @@ export default function StatsBar({ stats }: StatsProps) {
         <div className={styles.statMeta}>
           <span>NSE: {nseCount}</span>
           <span>BSE: {bseCount}</span>
+        </div>
+      </div>
+
+      <div className={`glass-panel ${styles.statCard} ${styles.authCard}`}>
+        <div className={styles.statTitle}>🏛️ Auth Capital</div>
+        <div className={styles.statValue}>{authCapCount}</div>
+        <div className={styles.statMeta}>
+          <span>Primary priority</span>
         </div>
       </div>
 
