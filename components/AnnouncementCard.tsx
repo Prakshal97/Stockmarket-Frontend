@@ -37,7 +37,8 @@ const safe = (val: any, fallback = 'Not Available'): string => {
 };
 
 export default function AnnouncementCard({ data }: AnnouncementProps) {
-  const date = data.announcement_date ? new Date(data.announcement_date) : new Date();
+  const dateStr = data.created_at || data.announcement_date;
+  const date = dateStr ? new Date(dateStr) : new Date();
   
   const impactLevel = safe(data.impact_level || data.impact, 'Low');
   const sentiment = safe(data.sentiment, 'Neutral');

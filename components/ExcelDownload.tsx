@@ -20,15 +20,6 @@ export default function ExcelDownload() {
   return (
     <div style={{ display: 'flex', gap: '1rem' }}>
       <button 
-        className="btn-primary" 
-        onClick={() => handleDownload('authorized-capital')}
-        disabled={isDownloading}
-      >
-        <FileSpreadsheet size={18} />
-        Auth Capital Excel
-      </button>
-      
-      <button 
         className="btn-primary"
         style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}
         onClick={() => handleDownload('full-report')}
