@@ -1,25 +1,33 @@
 import React from 'react';
-import { ExternalLink, Landmark, TrendingUp } from 'lucide-react';
+import { ExternalLink, Landmark } from 'lucide-react';
 import styles from './AuthCapitalTable.module.css';
 
 interface AuthCapitalAnnouncement {
   id: string;
   company_name: string;
-  ticker: string;
+  symbol: string;
   exchange: string;
   announcement_date: string;
-  board_approval: string;
-  date_of_board_meeting: string;
-  existing_auth_eq_cap_inr: number | null;
-  new_auth_eq_cap_inr: number | null;
-  proposed_increase_inr: number | null;
-  cmp: number | null;
-  market_cap_cr: number | null;
-  sector: string;
-  sentiment: string;
-  ai_insight: string;
-  trading_signal: string;
+  old_capital_inr: number | null;
+  new_capital_inr: number | null;
+  increase_amount_inr: number | null;
+  percentage_increase: number | null;
   source_url: string;
+  pdf_url?: string;
+  auth_data?: {
+    existing_auth_eq_cap_inr?: number | string | null;
+    new_auth_eq_cap_inr?: number | string | null;
+    proposed_increase_inr?: number | string | null;
+    percentage_increase?: number | string | null;
+    face_value_inr?: number | string | null;
+  };
+  excel_row?: {
+    existing_auth_eq_cap_inr?: number | string | null;
+    new_auth_eq_cap_inr?: number | string | null;
+    proposed_increase_inr?: number | string | null;
+    percentage_increase?: number | string | null;
+    face_value_inr?: number | string | null;
+  };
 }
 
 interface Props {
@@ -35,16 +43,23 @@ const formatINR = (val: number | null | undefined): string => {
   return `₹${val.toLocaleString('en-IN')}`;
 };
 
-const formatCMP = (val: number | null | undefined): string => {
-  if (val === null || val === undefined) return '—';
-  return `₹${val.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+const pickNumber = (...values: any[]): number | null => {
+  for (const value of values) {
+    if (value === null || value === undefined || value === '') continue;
+    const num = typeof value === 'string' ? Number(String(value).replace(/[₹,]/g, '').trim()) : Number(value);
+    if (!Number.isNaN(num)) return num;
+  }
+  return null;
 };
 
 const formatDate = (dateStr: string): string => {
   if (!dateStr) return '—';
   try {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    return new Date(dateStr).toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
   } catch {
     return dateStr;
   }
@@ -57,12 +72,37 @@ const safe = (val: any, fallback = '—'): string => {
   return str;
 };
 
+const resolveAnnouncementValues = (ann: AuthCapitalAnnouncement) => {
+  const oldCap = pickNumber(
+    ann.old_capital_inr,
+    ann.auth_data?.existing_auth_eq_cap_inr,
+    ann.excel_row?.existing_auth_eq_cap_inr
+  );
+  const newCap = pickNumber(
+    ann.new_capital_inr,
+    ann.auth_data?.new_auth_eq_cap_inr,
+    ann.excel_row?.new_auth_eq_cap_inr
+  );
+  const incAmt = pickNumber(
+    ann.increase_amount_inr,
+    ann.auth_data?.proposed_increase_inr,
+    ann.excel_row?.proposed_increase_inr
+  );
+  const pctInc = pickNumber(
+    ann.percentage_increase,
+    ann.auth_data?.percentage_increase,
+    ann.excel_row?.percentage_increase
+  );
+
+  return { oldCap, newCap, incAmt, pctInc };
+};
+
 export default function AuthCapitalTable({ announcements }: Props) {
   if (!announcements || announcements.length === 0) {
     return (
       <div className={styles.emptyState}>
         <Landmark size={40} style={{ opacity: 0.4 }} />
-        <p>No Authorized Capital announcements in the last 24 hours.</p>
+        <p>No Authorized Capital announcements in the last 48 hours.</p>
       </div>
     );
   }
@@ -81,69 +121,52 @@ export default function AuthCapitalTable({ announcements }: Props) {
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>Sr.</th>
-              <th>Date</th>
               <th>Company</th>
-              <th>Board</th>
-              <th>D.O.B.M</th>
-              <th>Existing Cap (INR)</th>
-              <th>New Cap (INR)</th>
-              <th>Increase (INR)</th>
-              <th>CMP</th>
-              <th>Market Cap</th>
-              <th>Sector</th>
-              <th>Remark +</th>
-              <th>Remark −</th>
-              <th>Action</th>
-              <th>Link</th>
+              <th>Symbol</th>
+              <th>Exchange</th>
+              <th>Date</th>
+              <th>Old Capital</th>
+              <th>New Capital</th>
+              <th>Increase Amount</th>
+              <th>% Increase</th>
+              <th>Source URL</th>
+              <th>PDF URL</th>
             </tr>
           </thead>
           <tbody>
-            {announcements.map((ann, idx) => {
-              const boardApproval = safe(ann.board_approval);
-              const boardClass = boardApproval === 'Yes'
-                ? styles.boardYes
-                : boardApproval.includes('Pending')
-                  ? styles.boardPending
-                  : '';
-
-              const sentiment = safe(ann.sentiment, 'Neutral');
-              const insight = safe(ann.ai_insight, '');
-              const remarkPositive = sentiment !== 'Negative' ? insight : '';
-              const remarkNegative = sentiment === 'Negative' ? insight : '';
-
-              const actionClass = sentiment === 'Positive'
-                ? styles.actionPositive
-                : sentiment === 'Negative'
-                  ? styles.actionNegative
-                  : styles.actionNeutral;
-
+            {announcements.map((ann) => {
+              const { oldCap, newCap, incAmt, pctInc } = resolveAnnouncementValues(ann);
               return (
-                <tr key={ann.id}>
-                  <td style={{ textAlign: 'center' }}>{idx + 1}</td>
-                  <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>{formatDate(ann.announcement_date)}</td>
-                  <td className={styles.companyName} title={ann.company_name}>
-                    {safe(ann.company_name)}
-                  </td>
-                  <td style={{ textAlign: 'center' }} className={boardClass}>{boardApproval}</td>
-                  <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>{safe(ann.date_of_board_meeting)}</td>
-                  <td className={styles.currencyCell}>{formatINR(ann.existing_auth_eq_cap_inr)}</td>
-                  <td className={styles.currencyCell}>{formatINR(ann.new_auth_eq_cap_inr)}</td>
-                  <td className={styles.currencyCell}>{formatINR(ann.proposed_increase_inr)}</td>
-                  <td className={styles.currencyCell}>{formatCMP(ann.cmp)}</td>
-                  <td className={styles.currencyCell}>
-                    {ann.market_cap_cr ? `₹${ann.market_cap_cr.toLocaleString('en-IN', { maximumFractionDigits: 2 })} Cr` : '—'}
-                  </td>
-                  <td className={styles.sectorCell}>{safe(ann.sector)}</td>
-                  <td className={styles.remarkCell}>{remarkPositive}</td>
-                  <td className={styles.remarkCell}>{remarkNegative}</td>
-                  <td className={actionClass}>{safe(ann.trading_signal)}</td>
-                  <td className={styles.linkCell}>
-                    <a href={ann.source_url} target="_blank" rel="noreferrer">
-                      <ExternalLink size={12} /> View
+              <tr key={ann.id}>
+                <td className={styles.companyName} title={ann.company_name}>
+                  {safe(ann.company_name)}
+                </td>
+                <td style={{ textAlign: 'center' }}>{safe(ann.symbol)}</td>
+                <td style={{ textAlign: 'center' }}>{safe(ann.exchange)}</td>
+                <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>{formatDate(ann.announcement_date)}</td>
+                <td className={styles.currencyCell}>{formatINR(oldCap)}</td>
+                <td className={styles.currencyCell}>{formatINR(newCap)}</td>
+                <td className={styles.currencyCell}>{formatINR(incAmt)}</td>
+                <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                  {pctInc === null || pctInc === undefined
+                    ? '—'
+                    : `${Number(pctInc).toFixed(2)}%`}
+                </td>
+                <td className={styles.linkCell}>
+                  <a href={ann.source_url} target="_blank" rel="noreferrer">
+                    <ExternalLink size={12} /> View
+                  </a>
+                </td>
+                <td className={styles.linkCell}>
+                  {ann.pdf_url ? (
+                    <a href={ann.pdf_url} target="_blank" rel="noreferrer">
+                      <ExternalLink size={12} /> PDF
                     </a>
-                  </td>
-                </tr>
+                  ) : (
+                    '—'
+                  )}
+                </td>
+              </tr>
               );
             })}
           </tbody>
