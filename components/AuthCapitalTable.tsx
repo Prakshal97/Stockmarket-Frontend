@@ -14,12 +14,21 @@ interface AuthCapitalAnnouncement {
   percentage_increase: number | null;
   source_url: string;
   pdf_url?: string;
-  auth_data?: {
+  confidence_level?: string;
+  classification_reason?: string;
+  classifier_score?: number;
+  extraction_method?: string;
+  raw_subject?: string;
+  evidence_snippet?: string;
+  ai_data?: {
+    ai_insight?: string;
     existing_auth_eq_cap_inr?: number | string | null;
     new_auth_eq_cap_inr?: number | string | null;
     proposed_increase_inr?: number | string | null;
     percentage_increase?: number | string | null;
     face_value_inr?: number | string | null;
+    confidence?: string;
+    evidence_snippet?: string;
   };
   excel_row?: {
     existing_auth_eq_cap_inr?: number | string | null;
@@ -31,7 +40,8 @@ interface AuthCapitalAnnouncement {
 }
 
 interface Props {
-  announcements: AuthCapitalAnnouncement[];
+  verified: AuthCapitalAnnouncement[];
+  possible: AuthCapitalAnnouncement[];
 }
 
 const formatINR = (val: number | null | undefined): string => {
@@ -97,81 +107,115 @@ const resolveAnnouncementValues = (ann: AuthCapitalAnnouncement) => {
   return { oldCap, newCap, incAmt, pctInc };
 };
 
-export default function AuthCapitalTable({ announcements }: Props) {
-  if (!announcements || announcements.length === 0) {
-    return (
-      <div className={styles.emptyState}>
-        <Landmark size={40} style={{ opacity: 0.4 }} />
-        <p>No Authorized Capital announcements in the last 48 hours.</p>
-      </div>
-    );
-  }
+export default function AuthCapitalTable({ verified, possible }: Props) {
+  const [subTab, setSubTab] = React.useState<'verified' | 'possible'>('verified');
+
+  const currentList = subTab === 'verified' ? verified : possible;
 
   return (
     <div>
       <div className={styles.sectionHeader}>
         <div className={styles.sectionTitle}>
           <Landmark size={18} />
-          <span>Authorized Capital Changes</span>
-          <span className={styles.badge}>{announcements.length}</span>
+          <span>Authorized Capital Restructuring</span>
+        </div>
+        
+        <div className={styles.tabGroup}>
+          <button 
+            className={`${styles.tabBtn} ${subTab === 'verified' ? styles.activeTab : ''}`}
+            onClick={() => setSubTab('verified')}
+          >
+            Verified Proof ({verified.length})
+          </button>
+          <button 
+            className={`${styles.tabBtn} ${subTab === 'possible' ? styles.activeTab : ''}`}
+            onClick={() => setSubTab('possible')}
+          >
+            Candidate Signals ({possible.length})
+          </button>
         </div>
       </div>
 
-      <div className={styles.tableWrapper}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Company</th>
-              <th>Symbol</th>
-              <th>Exchange</th>
-              <th>Date</th>
-              <th>Old Capital</th>
-              <th>New Capital</th>
-              <th>Increase Amount</th>
-              <th>% Increase</th>
-              <th>Source URL</th>
-              <th>PDF URL</th>
-            </tr>
-          </thead>
-          <tbody>
-            {announcements.map((ann) => {
-              const { oldCap, newCap, incAmt, pctInc } = resolveAnnouncementValues(ann);
-              return (
-              <tr key={ann.id}>
-                <td className={styles.companyName} title={ann.company_name}>
-                  {safe(ann.company_name)}
-                </td>
-                <td style={{ textAlign: 'center' }}>{safe(ann.symbol)}</td>
-                <td style={{ textAlign: 'center' }}>{safe(ann.exchange)}</td>
-                <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>{formatDate(ann.announcement_date)}</td>
-                <td className={styles.currencyCell}>{formatINR(oldCap)}</td>
-                <td className={styles.currencyCell}>{formatINR(newCap)}</td>
-                <td className={styles.currencyCell}>{formatINR(incAmt)}</td>
-                <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
-                  {pctInc === null || pctInc === undefined
-                    ? '—'
-                    : `${Number(pctInc).toFixed(2)}%`}
-                </td>
-                <td className={styles.linkCell}>
-                  <a href={ann.source_url} target="_blank" rel="noreferrer">
-                    <ExternalLink size={12} /> View
-                  </a>
-                </td>
-                <td className={styles.linkCell}>
-                  {ann.pdf_url ? (
-                    <a href={ann.pdf_url} target="_blank" rel="noreferrer">
-                      <ExternalLink size={12} /> PDF
-                    </a>
-                  ) : (
-                    '—'
-                  )}
-                </td>
+      {currentList.length === 0 ? (
+        <div className={styles.emptyState}>
+          <Landmark size={32} style={{ opacity: 0.3 }} />
+          <p>No {subTab} filings found in the current window.</p>
+        </div>
+      ) : (
+        <div className={styles.tableWrapper}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Company</th>
+                <th>Evidence / Context</th>
+                <th>Confidence</th>
+                <th>Date</th>
+                {subTab === 'verified' && (
+                  <>
+                    <th>Old Capital</th>
+                    <th>New Capital</th>
+                    <th>% Inc</th>
+                  </>
+                )}
+                <th>Method</th>
+                <th>PDF</th>
               </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {currentList.map((ann) => {
+                const { oldCap, newCap, pctInc } = resolveAnnouncementValues(ann);
+                const confidence = ann.confidence_level || ann.ai_data?.confidence || 'NONE';
+                const evidence = ann.evidence_snippet || ann.ai_data?.evidence_snippet || ann.classification_reason || ann.raw_subject;
+                
+                return (
+                  <tr key={ann.id}>
+                    <td className={styles.companyName}>
+                      <strong>{safe(ann.company_name)}</strong>
+                      <div className={styles.ticker}>{safe(ann.symbol)}</div>
+                    </td>
+                    <td className={styles.evidenceCell}>
+                      <div className={styles.evidenceText} title={evidence}>
+                        {safe(evidence)}
+                      </div>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <span className={`${styles.badge} ${
+                        confidence === 'HIGH' ? styles.badgeHigh : 
+                        confidence === 'MEDIUM' ? styles.badgeMedium : 
+                        styles.badgeLow
+                      }`}>
+                        {confidence}
+                      </span>
+                    </td>
+                    <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>{formatDate(ann.announcement_date)}</td>
+                    
+                    {subTab === 'verified' && (
+                      <>
+                        <td className={styles.currencyCell}>{formatINR(oldCap)}</td>
+                        <td className={styles.currencyCell}>{formatINR(newCap)}</td>
+                        <td style={{ textAlign: 'center' }}>
+                          {pctInc ? `${pctInc.toFixed(1)}%` : '—'}
+                        </td>
+                      </>
+                    )}
+
+                    <td style={{ textAlign: 'center', fontSize: '0.75rem' }}>
+                      {ann.extraction_method || 'Title Scan'}
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      {ann.pdf_url && (
+                        <a href={ann.pdf_url} target="_blank" rel="noreferrer" className={styles.iconLink}>
+                          <ExternalLink size={14} />
+                        </a>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

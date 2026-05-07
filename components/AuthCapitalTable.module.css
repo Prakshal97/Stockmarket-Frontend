@@ -20,13 +20,70 @@
   gap: 0.5rem;
 }
 
+.tabGroup {
+  display: flex;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 4px;
+  border-radius: 10px;
+  gap: 4px;
+}
+
+.tabBtn {
+  background: transparent;
+  border: none;
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.tabBtn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.activeTab {
+  background: linear-gradient(135deg, #1b4332, #2d6a4f);
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
 .badge {
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: white;
-  padding: 0.2rem 0.6rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.68rem;
   font-weight: 700;
+  text-transform: uppercase;
+}
+
+.badgeHigh {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badgeMedium {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badgeLow {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.iconLink {
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.iconLink:hover {
+  color: var(--accent-blue);
 }
 
 .table {
@@ -71,12 +128,38 @@
 
 .companyName {
   color: var(--text-primary);
-  font-weight: 600;
   text-align: left !important;
   max-width: 200px;
+}
+
+.companyName strong {
+  display: block;
+  font-size: 0.85rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.ticker {
+  font-size: 0.7rem;
+  color: var(--accent-blue);
+  font-weight: 500;
+}
+
+.evidenceCell {
+  max-width: 300px;
+}
+
+.evidenceText {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-style: italic;
 }
 
 .currencyCell {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { getAnnouncements, getAuthorizedCapital, forceFetch, triggerPipeline } from '../lib/api';
+import { getAnnouncements, getAuthorizedCapital, getPossibleCapital, forceFetch, triggerPipeline } from '../lib/api';
 import AnnouncementCard from './AnnouncementCard';
 import AuthCapitalTable from './AuthCapitalTable';
 import FilterBar from './FilterBar';
@@ -11,6 +11,7 @@ interface LiveFeedProps {
 
 export default function LiveFeed({ onStatsUpdate }: LiveFeedProps) {
   const [authCapital, setAuthCapital] = useState<any[]>([]);
+  const [possibleCapital, setPossibleCapital] = useState<any[]>([]);
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [triggering, setTriggering] = useState(false);
@@ -32,6 +33,7 @@ export default function LiveFeed({ onStatsUpdate }: LiveFeedProps) {
     setLoading(true);
     try {
       const authPromise = getAuthorizedCapital({ limit: 100 });
+      const possiblePromise = getPossibleCapital({ limit: 100 });
       const generalPromise = getAnnouncements({ ...filters, limit: 100 });
 
       const authData = await authPromise.catch((error) => {
@@ -39,6 +41,12 @@ export default function LiveFeed({ onStatsUpdate }: LiveFeedProps) {
         return { announcements: [] };
       });
       setAuthCapital(authData.announcements || []);
+
+      const possibleData = await possiblePromise.catch((error) => {
+        console.error('Error fetching possible capital:', error);
+        return { announcements: [] };
+      });
+      setPossibleCapital(possibleData.announcements || []);
 
       const generalData = await generalPromise.catch((error) => {
         console.error('Error fetching general announcements:', error);
@@ -140,7 +148,7 @@ export default function LiveFeed({ onStatsUpdate }: LiveFeedProps) {
             Both
           </button>
           <button style={tabStyle('auth')} onClick={() => setActiveTab('auth')}>
-            <Landmark size={14} /> Auth Capital ({authCapital.length})
+            <Landmark size={14} /> Auth Capital ({authCapital.length + possibleCapital.length})
           </button>
           <button style={tabStyle('general')} onClick={() => setActiveTab('general')}>
             <Megaphone size={14} /> Other ({announcements.length})
@@ -186,7 +194,7 @@ export default function LiveFeed({ onStatsUpdate }: LiveFeedProps) {
           {/* ════════ SECTION 1: AUTHORIZED CAPITAL (TOP PRIORITY) ════════ */}
           {(activeTab === 'both' || activeTab === 'auth') && (
             <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
-              <AuthCapitalTable announcements={authCapital} />
+              <AuthCapitalTable verified={authCapital} possible={possibleCapital} />
               {authCapital.length === 0 && !loading && (
                 <div style={{
                   marginTop: '1rem', padding: '0.8rem 1.2rem',

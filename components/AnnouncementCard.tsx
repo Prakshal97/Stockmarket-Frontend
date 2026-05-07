@@ -26,6 +26,10 @@ interface AnnouncementProps {
     pdf_url?: string;
     created_at?: string;
     authorized_capital?: any;
+    confidence_level?: string;
+    classification_reason?: string;
+    classifier_score?: number;
+    extraction_method?: string;
   };
 }
 
@@ -142,6 +146,17 @@ export default function AnnouncementCard({ data }: AnnouncementProps) {
           )}
         </div>
         <p className={styles.insightText}>{aiInsight}</p>
+      </div>
+
+      {/* ─── Classification & Extraction Metadata ─── */}
+      <div className={styles.metadataBox} style={{ marginTop: '0.8rem', padding: '0.8rem', background: 'rgba(0,0,0,0.15)', borderRadius: '6px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+          <span><strong>Confidence:</strong> {data.confidence_level || 'NONE'} ({data.classifier_score || 0})</span>
+          <span><strong>Method:</strong> {data.extraction_method || 'none'}</span>
+        </div>
+        <div>
+          <strong>Reason:</strong> {data.classification_reason || 'N/A'}
+        </div>
       </div>
 
       {/* ─── Footer: Timestamp + Links ─── */}

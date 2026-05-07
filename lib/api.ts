@@ -4,12 +4,18 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://stockmarket-backend
 
 const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 30000,
+  timeout: 120000,
 });
 
 // ── PRIMARY: Authorized Capital ─────────────────────────────────────────────
 export const getAuthorizedCapital = async (params = {}) => {
   const { data } = await api.get('/api/authorized-capital', { params });
+  return data;
+};
+
+// ── NEW: Possible Capital (Context Signals) ──────────────────────────────────
+export const getPossibleCapital = async (params = {}) => {
+  const { data } = await api.get('/api/possible-capital', { params });
   return data;
 };
 
